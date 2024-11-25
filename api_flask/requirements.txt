@@ -1,7 +1,8 @@
 Flask==2.3.0
-Flask-SQLAlchemy==3.0.0
-SQLAlchemy==1.4.49
+Flask-SQLAlchemy==3.1.1
+SQLAlchemy==2.0.36
 Flask-marshmallow==1.2.1
 marshmallow==3.23.0
 marshmallow-sqlalchemy==1.1.0
 PyMySQL==1.1.1
+scipy==1.14.1

@@ -1,0 +1,59 @@
+from utils.db import db,ma
+
+
+
+class SEF_TDATOS_MEDIDORES(db.Model):
+
+    
+
+    DMEV_ID_SERIAL = db.Column(db.Integer,primary_key=True,autoincrement=True)
+    DMEV_ID_TANDA = db.Column(db.Integer)
+    DMEV_SERIAL = db.Column(db.String(30))
+    DMEV_MARCA = db.Column(db.String(20))
+    DMEV_MODELO = db.Column(db.String(25))
+    DMEV_CONSTRUCCION = db.Column(db.String(20))
+    DMEV_TIPO_DE_ENERGIA = db.Column(db.String(15))
+    DMEV_CLASE = db.Column(db.String(10))
+    DMEV_TIPO_CONEXION = db.Column(db.String(20))
+    DMEV_CANTIDAD_FASES = db.Column(db.String(10))
+    DMEV_CANTIDAD_HILOS = db.Column(db.String(10))
+    DMEV_FABRICACION = db.Column(db.String(20))
+    DMEV_VOLTAJE_NOMINAL = db.Column(db.Float)
+    DMEV_CORRIENTE_NOMINAL = db.Column(db.Float)
+    DMEV_CORRIENTE_MAXIMA = db.Column(db.Float)
+    DMEV_CONSTANTE = db.Column(db.Float)
+    DMEN_RESOLUCION_MEDIDOR = db.Column(db.String(5))
+
+    
+
+
+    def __init__(self,DMEV_ID_TANDA,DMEV_SERIAL, DMEV_MARCA, DMEV_MODELO, DMEV_CONSTRUCCION,DMEV_TIPO_DE_ENERGIA,DMEV_CLASE,DMEV_TIPO_CONEXION,DMEV_CANTIDAD_FASES,DMEV_CANTIDAD_HILOS,DMEV_FABRICACION,DMEV_VOLTAJE_NOMINAL,DMEV_CORRIENTE_NOMINAL,DMEV_CORRIENTE_MAXIMA,DMEV_CONSTANTE,DMEN_RESOLUCION_MEDIDOR):
+        
+        self.DMEV_ID_TANDA = DMEV_ID_TANDA
+        self.DMEV_SERIAL = DMEV_SERIAL
+        self.DMEV_MARCA = DMEV_MARCA
+        self.DMEV_MODELO = DMEV_MODELO
+        self.DMEV_CONSTRUCCION = DMEV_CONSTRUCCION
+        self.DMEV_TIPO_DE_ENERGIA = DMEV_TIPO_DE_ENERGIA
+        self.DMEV_CLASE = DMEV_CLASE
+        self.DMEV_TIPO_CONEXION = DMEV_TIPO_CONEXION
+        self.DMEV_CANTIDAD_FASES = DMEV_CANTIDAD_FASES
+        self.DMEV_CANTIDAD_HILOS = DMEV_CANTIDAD_HILOS
+        self.DMEV_FABRICACION = DMEV_FABRICACION
+        self.DMEV_VOLTAJE_NOMINAL = DMEV_VOLTAJE_NOMINAL
+        self.DMEV_CORRIENTE_NOMINAL = DMEV_CORRIENTE_NOMINAL
+        self.DMEV_CORRIENTE_MAXIMA = DMEV_CORRIENTE_MAXIMA
+        self.DMEV_CONSTANTE = DMEV_CONSTANTE
+        self.DMEN_RESOLUCION_MEDIDOR = DMEN_RESOLUCION_MEDIDOR
+
+
+
+
+class MedidorSchema(ma.Schema):
+    class Meta:
+        fields = ('DMEV_ID_SERIAL','DMEV_ID_TANDA', 'DMEV_SERIAL', 'DMEV_MARCA', 'DMEV_MODELO', 'DMEV_CONSTRUCCION', 'DMEV_TIPO_DE_ENERGIA', 'DMEV_CLASE', 'DMEV_TIPO_CONEXION', 'DMEV_FABRICACION', 'DMEV_VOLTAJE_NOMINA', 'DMEV_CORRIENTE_NOMINAL', 'DMEV_CORRIENTE_MAXIMA', 'DMEV_CONSTANTE', 'DMEV_RESOLUCION_MEDIDOR')
+
+
+
+medidor_schema = MedidorSchema()
+medidores_schema = MedidorSchema(many=True)
