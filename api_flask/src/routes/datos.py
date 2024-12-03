@@ -268,8 +268,6 @@ def insertar_datos():
 
 
 
-
-
 def calcular_resolucion_medidor(value):
 
     if value == 1:
