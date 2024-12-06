@@ -7,84 +7,42 @@ from sqlalchemy import text
 import pythoncom
 
 
-def main_certificado(SOLICITUD,DMEV_ID_TANDA,SERIAL_MEDIDOR,conn1,conn2):
+def main_certificado(DMEV_ID_TANDA,conn1,conn2):
 
-    solicitud = SOLICITUD
+
     id_tanda = DMEV_ID_TANDA
-    serial_medidor = SERIAL_MEDIDOR
 
 
     db_sefmec = conn1
     db_sac = conn2
 
-    # with db_sac.connect() as connection_sac:
-
-
-    #     query = connection_sac.execute(text(f'''SELECT MEDIDOR_ID,MARCA_MEDIDOR FROM SAC.MEDIDORES WHERE NUMERO_MEDIDOR= '{serial_medidor}' '''))
-    #     data_medidor = query.fetchall()[0]
-
-
-    #     return data_medidor
-
-
-    # with db_sefmec.connect() as connection_sef:
-
-    #     solicitud = SOLICITUD
-    #     id_tanda = DMEV_ID_TANDA
-    #     serial_medidor = SERIAL_MEDIDOR
-    #     # Consulta sellos instalados
-
-    #     query = connection_sef.execute(text(f'''SELECT DMEV_ID_SERIAL
-    #                                 FROM SEF_TDATOS_MEDIDORES
-    #                                 WHERE DMEV_SERIAL= '{serial_medidor}'
-    #                                 AND DMEV_ID_TANDA= {id_tanda}'''))
-    #     data_medidor = query.fetchone()[0]
-
-
-    #     return data_medidor
-    
 
     CANT_MEDIDORES = 0
 
-    if solicitud=="individual":
-        CANT_MEDIDORES = 1
-        print("cantidad de medidores individual:",CANT_MEDIDORES)
 
-    elif solicitud == "masivo" and serial_medidor is None:
+
         
-        with db_sefmec.connect() as connection_sef:
-            query = (text(f'''SELECT COUNT(*) FROM SEF_TDATOS_MEDIDORES 
-                                        WHERE DMEV_ID_TANDA = {id_tanda}''') )
-                
-            CANT_MEDIDORES   = connection_sef.execute(query,{'id_tanda': id_tanda}).fetchone()[0]
+    with db_sefmec.connect() as connection_sef:
+        query = (text(f'''SELECT COUNT(*) FROM SEF_TDATOS_MEDIDORES 
+                                    WHERE DMEV_ID_TANDA = :id_tanda''') )
+            
+        CANT_MEDIDORES   = connection_sef.execute(query,{'id_tanda': id_tanda}).fetchone()[0]
 
-        print("cantidad de medidores masivos:",CANT_MEDIDORES)
 
-    else:
-        print("No se encuentra la ruta especificada")
+    
 
 
     with db_sefmec.connect() as connection_sef:
-        if solicitud=='individual':
+
+
+        query = (text(f'''SELECT DMEV_ID_SERIAL
+                                    FROM SEF_TDATOS_MEDIDORES
+                                    WHERE  DMEV_ID_TANDA={id_tanda} '''))
             
-            
-                query = (text(f'''SELECT DMEV_ID_SERIAL
-                                            FROM SEF_TDATOS_MEDIDORES
-                                            WHERE DMEV_SERIAL={serial_medidor}
-                                            AND DMEV_ID_TANDA={id_tanda} '''))
-                id_serial = connection_sef.execute(query,{'serial_medidor': serial_medidor,'id_tanda':id_tanda}).fetchone()[0]
-
-            
-
-        elif solicitud == 'masivo' and serial_medidor is None:
-                query = (text(f'''SELECT DMEV_ID_SERIAL
-                                            FROM SEF_TDATOS_MEDIDORES
-                                            WHERE  DMEV_ID_TANDA={id_tanda} '''))
-                    
-                id_serial = connection_sef.execute(query,{'id_tanda': id_tanda}).fetchone()[0]
+        id_serial = connection_sef.execute(query,{'id_tanda': id_tanda}).fetchone()[0]
 
 
-    print("consulta id_serial",id_serial)
+
 
     # Inicio
     f = 0
@@ -100,7 +58,7 @@ def main_certificado(SOLICITUD,DMEV_ID_TANDA,SERIAL_MEDIDOR,conn1,conn2):
 
         id_serial =  id_serial + f
 
-        print("id + f:", id_serial)
+
 
         id_tanda = id_tanda
 
@@ -108,14 +66,6 @@ def main_certificado(SOLICITUD,DMEV_ID_TANDA,SERIAL_MEDIDOR,conn1,conn2):
 
 
 
-        # id_serial +=i
-
-        # Cantidad de medidores
-
-        print ("id_tanda:",id_tanda)
-        print ("id_serial:",id_serial)
-        print ("Cant Medidores:",CANT_MEDIDORES)
-        print ("Cant j:",j)
 
         # Programa principal de consultas a SEFMEC
 
@@ -257,8 +207,8 @@ def main_certificado(SOLICITUD,DMEV_ID_TANDA,SERIAL_MEDIDOR,conn1,conn2):
             fecha_hora_actual = datetime.now()
             fecha = fecha_hora_actual.date()
             hora = fecha_hora_actual.time()
-            sql_insert = text(f'''INSERT INTO SEF_TCERTIFICADOS_CALIBRACION(DMEV_ID_TANDA, EQUN_ID_EPM, DMEV_ID_SERIAL, CCD_FECHA_EMISION)
-                                    VALUES ({id_tanda}, {ID_EPM}, {id_serial}, TO_DATE('{fecha}','YYYY-MM-DD'))''')
+            sql_insert = text(f'''INSERT INTO SEF_TCERTIFICADOS_CALIBRACION(DMEV_ID_TANDA, EQUN_ID_EPM, DMEV_ID_SERIAL, CCD_FECHA_EMISION,CCD_EST_APROBACION)
+                                    VALUES ({id_tanda}, {ID_EPM}, {id_serial}, TO_DATE('{fecha}','YYYY-MM-DD'),'NO')''')
 
 
             connection_sef.execute(sql_insert)
@@ -274,13 +224,6 @@ def main_certificado(SOLICITUD,DMEV_ID_TANDA,SERIAL_MEDIDOR,conn1,conn2):
 
 
         
-
-            print("Fin de consulta del SEFMEC")
-            print ("id_tanda:",id_tanda)
-            print ("id_serial:",id_serial)
-            print ("Cant Medidores:",CANT_MEDIDORES)
-            print ("Cant j:",j)
-
 
 
 
@@ -473,11 +416,6 @@ def main_certificado(SOLICITUD,DMEV_ID_TANDA,SERIAL_MEDIDOR,conn1,conn2):
         # cfs.connection.close()
 
 
-        print("Fin de consulta del SAC",CANT_MEDIDORES)
-        print ("id_tanda:",id_tanda)
-        print ("id_serial:",id_serial)
-        print ("Cant Medidores:",CANT_MEDIDORES)
-        print ("Cant j:",j)
 
 
         # GENERACION DE CERTIFICADOS DE CALIBRACIÓN
@@ -688,11 +626,7 @@ def main_certificado(SOLICITUD,DMEV_ID_TANDA,SERIAL_MEDIDOR,conn1,conn2):
         D_COLOR_SELLO_RETIR_2 = dcr2
         D_COLOR_SELLO_RETIR_3 = dcr3
 
-        print("MITAD VALORES CERT")
-        print ("id_tanda:",id_tanda)
-        print ("id_serial:",id_serial)
-        print ("Cant Medidores:",CANT_MEDIDORES)
-        print ("Cant j:",j)
+
 
         SESV_CALIBRADOR = CALIBRADOR
 
@@ -831,15 +765,15 @@ def main_certificado(SOLICITUD,DMEV_ID_TANDA,SERIAL_MEDIDOR,conn1,conn2):
         sheet['F44'] = NUMERO_SELLO_1
         sheet['I44'] = D_TIPO_SELLO_1
         sheet['L44'] = D_COLOR_SELLO_1
-        #sheet['N44'] = ESTADO_SELLO_1
+        sheet['N44'] = 'N.A'
         sheet['F45'] = NUMERO_SELLO_2
         sheet['I45'] = D_TIPO_SELLO_2
         sheet['L45'] = D_COLOR_SELLO_2
-        #sheet['N45'] = ESTADO_SELLO_2
+        sheet['N45'] = 'N.A'
         sheet['F46'] = NUMERO_SELLO_3
         sheet['I46'] = D_TIPO_SELLO_3
         sheet['L46'] = D_COLOR_SELLO_3
-        #sheet['N46'] = ESTADO_SELLO_3
+        sheet['N46'] = 'N.A'
 
         sheet['F48'] = NUMERO_SELLO_RETIR_1
         sheet['I48'] = D_TIPO_SELLO_RETIR_1
@@ -859,11 +793,7 @@ def main_certificado(SOLICITUD,DMEV_ID_TANDA,SERIAL_MEDIDOR,conn1,conn2):
 
         sheet['F65'] = SESV_CALIBRADOR
 
-        print("FIN VALORES CERT")
-        print ("id_tanda:",id_tanda)
-        print ("id_serial:",id_serial)
-        print ("Cant Medidores:",CANT_MEDIDORES)
-        print ("Cant j:",j)
+
         sheet.add_image(img, 'B2')
 
         pythoncom.CoInitialize()
@@ -892,18 +822,12 @@ def main_certificado(SOLICITUD,DMEV_ID_TANDA,SERIAL_MEDIDOR,conn1,conn2):
         # cf.connection.close()
         
         id_serial = id_serial - f
-        print("valor id - f:", id_serial)
+        
 
         j+=1
 
         f+=1
 
-        # id_serial = id_serial + f
-        print("valor del nuevo id_serial:", id_serial)
-
-
-        print("valor final j:", j)
-        print("Fin del certificado:", f)
 
 
 

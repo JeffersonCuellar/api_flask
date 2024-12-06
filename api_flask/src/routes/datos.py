@@ -6,6 +6,8 @@ from models.datos_medidores import SEF_TDATOS_MEDIDORES
 from models.mediciones import SEF_TMEDICIONES
 from models.opciones_norma import SEF_TOPCIONES_NORMA
 from modulos.incertidumbre import exacitud as cex
+from datetime import datetime
+from modulos.GEN_CERTIF import generar_cert as gc
 
 
 datos = Blueprint("datos",__name__)
@@ -248,11 +250,16 @@ def insertar_datos():
     tanda = id_tanda.SESN_ID_TANDA 
 
     
-    #realizar calculos de incertidumbre
+    #realizar calculos de incertidumbre y dosificación
 
     cex.main(tanda)
 
+
+    conn1 = db.get_engine(bind='db1')
+    conn2 = db.get_engine(bind='db2')
     
+    gc.main_certificado(tanda,conn1,conn2)
+
 
     return jsonify({"message": f"Tanda {tanda} Procesada"})
 

@@ -1,6 +1,5 @@
 from flask import Flask
 from routes.datos import datos
-from routes.generacion_certificados import generarCertificados
 from utils.db import db,ma
 from config import DATA_CONNECTION_URI, DATA_CONNECTION_SAC
 from flask_cors import CORS
@@ -28,5 +27,5 @@ db.init_app(app)
 ma.init_app(app)
 
 app.register_blueprint(datos)
-app.register_blueprint(generarCertificados)
+
 
