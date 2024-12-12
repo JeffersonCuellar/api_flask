@@ -117,6 +117,16 @@ def insertar_datos():
             DMEV_TIPO_CONEXION = None
 
 
+        #Convertir nomenclatura de fabricacion para SEF_TDATOS_MEDIDORES
+        if DMEV_FABRICACION == 'ANT':
+            DMEV_FABRICACION = 'Antes 2022'
+        elif DMEV_FABRICACION == 'POS':
+            DMEV_FABRICACION = 'Despues 2022'
+        else:
+            DMEV_FABRICACION = None
+
+
+
         #Conversión para DMEN_RESOLUCION_MEDIDOR
         DMEN_RESOLUCION_MEDIDOR = calcular_resolucion_medidor(int(DMEN_RESOLUCION_MEDIDOR[0]))
 
@@ -137,35 +147,35 @@ def insertar_datos():
             DMEN_ID_SERIAL = id_medidor.DMEV_ID_SERIAL
             MEDV_VACIO = request.json['MEDICIONES'][i]['VACIO']
             MEDV_ARRANQUE = request.json['MEDICIONES'][i]['ARRANQUE']
-            MEDN_IMIN_RST_1_VALOR_MEDIO = request.json['MEDICIONES'][i]['IMIN_RST_1_VALOR_MEDIO']
-            MEDN_IMIN_RST_1_DESV_EST = request.json['MEDICIONES'][i]['IMIN_RST_1_DESV_EST']
-            MEDN_5_RST_1_VALOR_MEDIO = request.json['MEDICIONES'][i]['5_RST_1_VALOR_MEDIO']
-            MEDN_5_RST_1_DESV_EST = request.json['MEDICIONES'][i]['5_RST_1_DESV_EST']
-            MEDN_100_RST_1_VALOR_MEDIO = request.json['MEDICIONES'][i]['100_RST_1_VALOR_MEDIO']
-            MEDN_100_RST_1_DESV_EST = request.json['MEDICIONES'][i]['100_RST_1_DESV_EST']
-            MEDN_100_R_1_VALOR_MEDIO = request.json['MEDICIONES'][i]['100_R_1_VALOR_MEDIO']
-            MEDN_100_R_1_DESV_EST = request.json['MEDICIONES'][i]['100_R_1_DESV_EST']
-            MEDN_100_S_1_VALOR_MEDIO = request.json['MEDICIONES'][i]['100_S_1_VALOR_MEDIO']
-            MEDN_100_S_1_DESV_EST = request.json['MEDICIONES'][i]['100_S_1_DESV_EST']
-            MEDN_100_T_1_VALOR_MEDIO = request.json['MEDICIONES'][i]['100_T_1_VALOR_MEDIO']
-            MEDN_100_T_1_DESV_EST = request.json['MEDICIONES'][i]['100_T_1_DESV_EST']
-            MEDN_100_RST_0_5I_VALOR_MEDIO = request.json['MEDICIONES'][i]['100_RST_0_5I_VALOR_MEDIO']
-            MEDN_100_RST_0_5I_DESV_EST = request.json['MEDICIONES'][i]['100_RST_0_5I_DESV_EST']
-            MEDN_100_RST_0_8C_VALOR_MEDIO = request.json['MEDICIONES'][i]['100_RST_0_8C_VALOR_MEDIO']
-            MEDN_100_RST_0_8C_DESV_EST = request.json['MEDICIONES'][i]['100_RST_0_8C_DESV_EST']
-            MEDN_100_RST_0_5C_VALOR_MEDIO = request.json['MEDICIONES'][i]['100_RST_0_5C_VALOR_MEDIO']
-            MEDN_100_RST_0_5C_DESV_EST = request.json['MEDICIONES'][i]['100_RST_0_5C_DESV_EST']
-            MEDN_MAX_RST_1_VALOR_MEDIO = request.json['MEDICIONES'][i]['MAX_RST_1_VALOR_MEDIO']
-            MEDN_MAX_RST_1_DESV_EST = request.json['MEDICIONES'][i]['MAX_RST_1_DESV_EST']
-            MEDN_LECTURA_INICIAL_UNO = request.json['MEDICIONES'][i]['LECTURA_INICIAL_UNO']
-            MEDN_LECTURA_FINAL_UNO = request.json['MEDICIONES'][i]['LECTURA_FINAL_UNO']
-            MEDN_ENERGIA_APLICADA_UNO = request.json['MEDICIONES'][i]['ENERGIA_APLICADA_UNO']
-            MEDN_LECTURA_INICIAL_DOS = request.json['MEDICIONES'][i]['LECTURA_INICIAL_DOS']
-            MEDN_LECTURA_FINAL_DOS = request.json['MEDICIONES'][i]['LECTURA_FINAL_DOS']
-            MEDN_ENERGIA_APLICADA_DOS = request.json['MEDICIONES'][i]['ENERGIA_APLICADA_DOS']
-            MEDN_LECTURA_INICIAL_TRES = request.json['MEDICIONES'][i]['LECTURA_INICIAL_TRES']
-            MEDN_LECTURA_FINAL_TRES =  request.json['MEDICIONES'][i]['LECTURA_FINAL_TRES']
-            MEDN_ENERGIA_APLICADA_TRES = request.json['MEDICIONES'][i]['ENERGIA_APLICADA_TRES']
+            MEDN_IMIN_RST_1_VALOR_MEDIO = request.json['MEDICIONES'][i].get('IMIN_RST_1_VALOR_MEDIO', None)
+            MEDN_IMIN_RST_1_DESV_EST = request.json['MEDICIONES'][i].get('IMIN_RST_1_DESV_EST', None)
+            MEDN_5_RST_1_VALOR_MEDIO = request.json['MEDICIONES'][i].get('5_RST_1_VALOR_MEDIO', None)
+            MEDN_5_RST_1_DESV_EST = request.json['MEDICIONES'][i].get('5_RST_1_DESV_EST', None)
+            MEDN_100_RST_1_VALOR_MEDIO = request.json['MEDICIONES'][i].get('100_RST_1_VALOR_MEDIO', None)
+            MEDN_100_RST_1_DESV_EST = request.json['MEDICIONES'][i].get('100_RST_1_DESV_EST', None)
+            MEDN_100_R_1_VALOR_MEDIO = request.json['MEDICIONES'][i].get('100_R_1_VALOR_MEDIO', None)
+            MEDN_100_R_1_DESV_EST = request.json['MEDICIONES'][i].get('100_R_1_DESV_EST', None)
+            MEDN_100_S_1_VALOR_MEDIO = request.json['MEDICIONES'][i].get('100_S_1_VALOR_MEDIO', None)
+            MEDN_100_S_1_DESV_EST = request.json['MEDICIONES'][i].get('100_S_1_DESV_EST', None)
+            MEDN_100_T_1_VALOR_MEDIO = request.json['MEDICIONES'][i].get('100_T_1_VALOR_MEDIO', None)
+            MEDN_100_T_1_DESV_EST = request.json['MEDICIONES'][i].get('100_T_1_DESV_EST', None)
+            MEDN_100_RST_0_5I_VALOR_MEDIO = request.json['MEDICIONES'][i].get('100_RST_0_5I_VALOR_MEDIO', None)
+            MEDN_100_RST_0_5I_DESV_EST = request.json['MEDICIONES'][i].get('100_RST_0_5I_DESV_EST', None)
+            MEDN_100_RST_0_8C_VALOR_MEDIO = request.json['MEDICIONES'][i].get('100_RST_0_8C_VALOR_MEDIO', None)
+            MEDN_100_RST_0_8C_DESV_EST = request.json['MEDICIONES'][i].get('100_RST_0_8C_DESV_EST', None)
+            MEDN_100_RST_0_5C_VALOR_MEDIO = request.json['MEDICIONES'][i].get('100_RST_0_5C_VALOR_MEDIO', None)
+            MEDN_100_RST_0_5C_DESV_EST = request.json['MEDICIONES'][i].get('100_RST_0_5C_DESV_EST', None)
+            MEDN_MAX_RST_1_VALOR_MEDIO = request.json['MEDICIONES'][i].get('MAX_RST_1_VALOR_MEDIO', None)
+            MEDN_MAX_RST_1_DESV_EST = request.json['MEDICIONES'][i].get('MAX_RST_1_DESV_EST', None)
+            MEDN_LECTURA_INICIAL_UNO = request.json['MEDICIONES'][i].get('LECTURA_INICIAL_UNO', None)
+            MEDN_LECTURA_FINAL_UNO = request.json['MEDICIONES'][i].get('LECTURA_FINAL_UNO', None)
+            MEDN_ENERGIA_APLICADA_UNO = request.json['MEDICIONES'][i].get('ENERGIA_APLICADA_UNO', None)
+            MEDN_LECTURA_INICIAL_DOS = request.json['MEDICIONES'][i].get('LECTURA_INICIAL_DOS', None)
+            MEDN_LECTURA_FINAL_DOS = request.json['MEDICIONES'][i].get('LECTURA_FINAL_DOS', None)
+            MEDN_ENERGIA_APLICADA_DOS = request.json['MEDICIONES'][i].get('ENERGIA_APLICADA_DOS', None)
+            MEDN_LECTURA_INICIAL_TRES = request.json['MEDICIONES'][i].get('LECTURA_INICIAL_TRES', None)
+            MEDN_LECTURA_FINAL_TRES =  request.json['MEDICIONES'][i].get('LECTURA_FINAL_TRES', None)
+            MEDN_ENERGIA_APLICADA_TRES = request.json['MEDICIONES'][i].get('ENERGIA_APLICADA_TRES', None)
 
             
             # Conversion de nomenclatura de vacio
@@ -277,12 +287,14 @@ def insertar_datos():
 
 def calcular_resolucion_medidor(value):
 
-    if value == 1:
-        return 0.1
-    else:
-        return round(0.1*calcular_resolucion_medidor(value-1),5)
-
-
+    try:
+        if value == 1:
+            return 0.1
+        else:
+            return round(0.1*calcular_resolucion_medidor(value-1),5)
+    except Exception as e:
+    
+        raise ValueError('El valor que recibe por parametro no corresponde a la resolcuion medidor')
 
 
 #Para usar en una nueva version

@@ -138,8 +138,7 @@ def main(epm,puntos_carga,id_serial):
     
     
 
-    print(f'lista em :  {lista_em}')
-    print(f'lista evc :  {lista_evc}') 
+
     
     
 
@@ -156,13 +155,6 @@ def main(epm,puntos_carga,id_serial):
         mediciones[i].append(desviacion_estandar)
         mediciones[i].append(desviacion_estandar_smed)
 
-    print(mediciones_evc)
-    # print(f'Estas son las tres medidas: {lista_em}')
-    # print(f'Estas son los datos del error de ensayo de verificacion: {lista_evc}')
-
-    # print(f'mediciones Em: {mediciones_em}')
-    # print(f'mediciones Ea: {mediciones_ea}')
-    # print(f'mediciones Evc: {mediciones_evc}')
 
 
 
@@ -237,20 +229,11 @@ def main(epm,puntos_carga,id_serial):
     
     #Calculo de la incertidumbre estandar combinada
 
-    # resultados = []
-    # for i in datos_uyi:
-    #     resultados.append(i**2)
-
-    # incertidumbre_estandarCombinada_evc = math.sqrt(sum(resultados))
     incertidumbre_estandarCombinada_evc = calcular_incertidumbre_estandar_evc(datos_uyi)
 
 
 
-    # print(f'duda: {lista_duda}')
-    # print(f'reduccion: {lista_reduccion}')
-    # print(f'uxi: {datos_uxi}')
-    # print(f'uyi: {datos_uyi}')
-    # print(f'Grados de libertad veff(xi): {lista_grados_libertad}')
+
 
     #Calcular Veff, Incertidumbre estandar combinada e incertidumbre expandida
 
@@ -288,11 +271,7 @@ def main(epm,puntos_carga,id_serial):
 
     incertidumbre_expandida_uE = calcular_incertidumbre_expandida(factor_cubrimiento,incertidumbre_estandarCombinada_evc)
 
-    # print(f'valor efectivo: {veff}')
-    # print(f'Incertidumbre estandar combinada(ucEvc): {incertidumbre_estandarCombinada_evc}')
-    # print(f'Factor de cubrimiento: {factor_cubrimiento}')
-    # print(f'Incertidumbre expandida(uE): {round(incertidumbre_expandida_uE,3)}')
-    # print(f'Ensayo de verificación de la constante: {round(mediciones_evc[0],3)}')
+
     conformidad_dosificacion = esConforme(mediciones_evc[0], incertidumbre_estandarCombinada_evc,lep_permisible)
     
     
@@ -538,7 +517,7 @@ def esConforme(ensayo_verificacion,incertidumbre_estandarCombinada_evc,lep_permi
                 
             return 'CEVC'
         else:
-        # elif  abs(ensayo_verificacion) > (abs(lep_permisible) -(1.64 * abs(expresionEvaluacion))):
+        
             return 'NCEVC'
 
         

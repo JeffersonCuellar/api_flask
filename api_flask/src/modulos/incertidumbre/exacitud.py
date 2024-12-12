@@ -46,6 +46,9 @@ def main(tanda):
                             '''))
             id_norma, epm,puntos_carga = datos.fetchall()[0]
 
+
+
+
             # epm = int(input('Digite epm: ')) #Este valor se trae del frontend(opcion del cliente)
 
             # #Consulta a la tabla SEF_TEQUIPOS_EPMS
@@ -190,7 +193,6 @@ def main(tanda):
 
                 tipo_carga,factor_potencia = data_fp.fetchall()[0]
 
-                print(VALOR_MEDIO,DESVIACION_ESTANDAR,incertidumbre_a,incertidumbre_B,incertidumbre_c,valorEfectivo,factorCobertura,incertidumbre_exp,error_porcentual,lep_obtenido,resultadoC)
 
 
                 try: 
@@ -267,7 +269,7 @@ def calcular_Ua(desv_est):
 
 
 # Uc: Incertidumbre combinada:
-# calcular_Uc = lambda Ua, Ub : round(math.sqrt(Ua**2 + Ub**2), 3)
+
 
 def calcular_Uc(Ua,Ub):
 

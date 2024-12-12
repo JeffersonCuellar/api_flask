@@ -37,7 +37,7 @@ def main_certificado(DMEV_ID_TANDA,conn1,conn2):
 
         query = (text(f'''SELECT DMEV_ID_SERIAL
                                     FROM SEF_TDATOS_MEDIDORES
-                                    WHERE  DMEV_ID_TANDA={id_tanda} '''))
+                                    WHERE  DMEV_ID_TANDA={id_tanda} ORDER BY DMEV_ID_SERIAL ASC'''))
             
         id_serial = connection_sef.execute(query,{'id_tanda': id_tanda}).fetchone()[0]
 
@@ -74,7 +74,7 @@ def main_certificado(DMEV_ID_TANDA,conn1,conn2):
 
             data_medidor = connection_sef.execute(text(f'''SELECT DMEV_MARCA, DMEV_MODELO, DMEV_SERIAL, DMEV_CONSTRUCCION, DMEV_TIPO_DE_ENERGIA, DMEV_CORRIENTE_NOMINAL, DMEV_CORRIENTE_MAXIMA, DMEV_TIPO_DE_ENERGIA, DMEV_CLASE, DMEV_CONSTRUCCION, DMEV_CANTIDAD_FASES, DMEV_CANTIDAD_HILOS
                                             FROM SEF_TDATOS_MEDIDORES
-                                            WHERE DMEV_ID_SERIAL={id_serial}'''))
+                                            WHERE DMEV_ID_SERIAL={id_serial} ORDER BY DMEV_ID_SERIAL ASC'''))
 
             MARCA, MODELO, SERIAL, CONSTRUCCION, TIPO_ENERGIA, CORRIENTE_NOMINAL, CORRIENTE_MAXIMA, TIPO_DE_ENERGIA, CLASE, CONSTRUCCION, CANT_FASES, CANT_HILOS = data_medidor.fetchall()[0]
 
@@ -137,7 +137,7 @@ def main_certificado(DMEV_ID_TANDA,conn1,conn2):
 
             data_calculos = connection_sef.execute(text(f'''SELECT RESDN_ERROR_DOSIF, RESDN_INCERT_DOSIF, RESDV_EVAL_CONFORM
                                             FROM SEF_TRESULT_INCERT_DOSIFICACION
-                                            WHERE DMEV_ID_SERIAL={id_serial}'''))
+                                            WHERE DMEV_ID_SERIAL={id_serial} ORDER BY DMEV_ID_SERIAL ASC'''))
 
             ERROR_DOSIF, INCERT_DOSIF, EVAL_CONFORM   = data_calculos.fetchall()[0]
 
@@ -145,14 +145,14 @@ def main_certificado(DMEV_ID_TANDA,conn1,conn2):
 
             data_mediciones = connection_sef.execute(text(f'''SELECT MEDV_VACIO, MEDV_ARRANQUE, MEDN_LECTURA_INICIAL_UNO, MEDN_LECTURA_FINAL_UNO, MEDN_ENERGIA_APLICADA_UNO, MEDN_LECTURA_INICIAL_DOS, MEDN_LECTURA_FINAL_DOS, MEDN_ENERGIA_APLICADA_DOS, MEDN_LECTURA_INICIAL_TRES, MEDN_LECTURA_FINAL_TRES, MEDN_ENERGIA_APLICADA_TRES
                                             FROM SEF_TMEDICIONES
-                                            WHERE DMEN_ID_SERIAL={id_serial}'''))
+                                            WHERE DMEN_ID_SERIAL={id_serial} ORDER BY DMEN_ID_SERIAL ASC'''))
 
             VACIO, ARRANQUE, LECTURA_INICIAL_UNO, LECTURA_FINAL_UNO, ENERGIA_APLICADA_UNO, LECTURA_INICIAL_DOS, LECTURA_FINAL_DOS, ENERGIA_APLICADA_DOS, LECTURA_INICIAL_TRES, LECTURA_FINAL_TRES, ENERGIA_APLICADA_TRES   = data_mediciones.fetchall()[0]
 
             # Datos Metrológicos exactitud
 
             data_calculos_exact= connection_sef.execute(text(f'''SELECT COUNT(*) FROM SEF_TINCERTIDUMBRE_EXACTITUD 
-                                            WHERE DMEN_ID_SERIAL = {id_serial}''') )
+                                            WHERE DMEN_ID_SERIAL = {id_serial} ORDER BY DMEN_ID_SERIAL ASC''') )
 
             CANT_PUNTO_CARGA   = data_calculos_exact.fetchone()[0]
 
@@ -171,7 +171,7 @@ def main_certificado(DMEV_ID_TANDA,conn1,conn2):
 
                 data = connection_sef.execute(text(f'''SELECT INCN_PROMEDIO_DATO, INCN_INCERTIDUMBRE_EXPANDIDA, INCN_FACTOR_COBERTURA, INCN_ERROR_MAX_PERMITIDO, INCV_CONFORMIDAD
                                                 FROM SEF_TINCERTIDUMBRE_EXACTITUD
-                                                WHERE DMEN_ID_SERIAL={id_serial} AND NORN_PUNTO_CARGA={i}''') )
+                                                WHERE DMEN_ID_SERIAL={id_serial} AND NORN_PUNTO_CARGA={i}  ORDER BY DMEN_ID_SERIAL ASC''') )
 
 
                 PROMEDIO_DATO, INCERTIDUMBRE_EXPANDIDA, FACTOR_COBERTURA, ERROR_MAX_PERMITIDO, CONFORMIDAD = data.fetchall()[0]
@@ -184,8 +184,11 @@ def main_certificado(DMEV_ID_TANDA,conn1,conn2):
 
                 i+=1
 
-            # Calibrador
 
+            
+
+            # Calibrador
+            
             data_calibrador = connection_sef.execute(text(f'''SELECT   CA.CALN_CODIGO_SAC_CALIBRADOR                               
                                         FROM SEF_TSESSION S, SEF_TCALIBRADOR CA
                                         WHERE  S.SESV_CALIBRADOR = CA.CALN_ID_CALIBRADOR
@@ -218,7 +221,7 @@ def main_certificado(DMEV_ID_TANDA,conn1,conn2):
 
             data_n_cert = connection_sef.execute(text(f'''SELECT   CCN_NUM_CERTIFICADO                               
                                         FROM SEF_TCERTIFICADOS_CALIBRACION
-                                        WHERE  DMEV_ID_SERIAL = {id_serial}'''))
+                                        WHERE  DMEV_ID_SERIAL = {id_serial} ORDER BY DMEV_ID_SERIAL ASC'''))
 
             NUM_CERTIFICADO   = data_n_cert.fetchone()[0]
 
@@ -471,7 +474,7 @@ def main_certificado(DMEV_ID_TANDA,conn1,conn2):
         REGISTRADOR_ENTEROS = REGISTRO_ENTEROS 
         REGISTRADOR_DECIMALES = REGISTRO_DECIMALES
         COMPONENTES = D_COMPONENTES
-        FABRICANTE = D_FABRICANTE
+        FABRICANTE = D_FABRICANTE 
         FABRICACION = D_MODELO
 
         METODOS_ENSAYOS = METODOS_ENSAYOS
@@ -507,74 +510,151 @@ def main_certificado(DMEV_ID_TANDA,conn1,conn2):
         NUMERAL_EXACTITUD = NUMERAL_EXACTITUD
         NUMERAL_DOSIFICACION = NUMERAL_DOSIFICACION
 
-        INCN_PROMEDIO_DATO_IMIN = lista_promedio[0]
-        INCN_INCERTIDUMBRE_EXPANDIDA_IMIN = lista_incertidumbre[0]
-        INCN_FACTOR_COBERTURA_IMIN = lista_factor_cobertura[0]
-        INCN_ERROR_MAX_PERMITIDO_IMIN = lista_error_permitido[0]
-        INCV_CONFORMIDAD_IMIN = lista_conformidad[0]
 
 
-        INCN_PROMEDIO_DATO_5 = lista_promedio[1]
-        INCN_INCERTIDUMBRE_EXPANDIDA_5 = lista_incertidumbre[1]
-        INCN_FACTOR_COBERTURA_5 = lista_factor_cobertura[1]
-        INCN_ERROR_MAX_PERMITIDO_5 = lista_error_permitido[1]
-        INCV_CONFORMIDAD_5 = lista_conformidad[1]
+    
+        if(CANT_PUNTO_CARGA == 10):
+
+            INCN_PROMEDIO_DATO_IMIN = lista_promedio[0]
+            INCN_INCERTIDUMBRE_EXPANDIDA_IMIN = lista_incertidumbre[0]
+            INCN_FACTOR_COBERTURA_IMIN = lista_factor_cobertura[0]
+            INCN_ERROR_MAX_PERMITIDO_IMIN = lista_error_permitido[0]
+            INCV_CONFORMIDAD_IMIN = lista_conformidad[0]
 
 
-        INCN_PROMEDIO_DATO_100 = lista_promedio[2]
-        INCN_INCERTIDUMBRE_EXPANDIDA_100 = lista_incertidumbre[2]
-        INCN_FACTOR_COBERTURA_100 = lista_factor_cobertura[2]
-        INCN_ERROR_MAX_PERMITIDO_100 = lista_error_permitido[2]
-        INCV_CONFORMIDAD_100 = lista_conformidad[2]
+            INCN_PROMEDIO_DATO_5 = lista_promedio[1]
+            INCN_INCERTIDUMBRE_EXPANDIDA_5 = lista_incertidumbre[1]
+            INCN_FACTOR_COBERTURA_5 = lista_factor_cobertura[1]
+            INCN_ERROR_MAX_PERMITIDO_5 = lista_error_permitido[1]
+            INCV_CONFORMIDAD_5 = lista_conformidad[1]
 
 
-        INCN_PROMEDIO_DATO_100R = lista_promedio[3]
-        INCN_INCERTIDUMBRE_EXPANDIDA_100R = lista_incertidumbre[3]
-        INCN_FACTOR_COBERTURA_100R = lista_factor_cobertura[3]
-        INCN_ERROR_MAX_PERMITIDO_100R = lista_error_permitido[3]
-        INCV_CONFORMIDAD_100R = lista_conformidad[3]
+            INCN_PROMEDIO_DATO_100 = lista_promedio[2]
+            INCN_INCERTIDUMBRE_EXPANDIDA_100 = lista_incertidumbre[2]
+            INCN_FACTOR_COBERTURA_100 = lista_factor_cobertura[2]
+            INCN_ERROR_MAX_PERMITIDO_100 = lista_error_permitido[2]
+            INCV_CONFORMIDAD_100 = lista_conformidad[2]
 
 
-        INCN_PROMEDIO_DATO_100S = lista_promedio[4]
-        INCN_INCERTIDUMBRE_EXPANDIDA_100S = lista_incertidumbre[4]
-        INCN_FACTOR_COBERTURA_100S = lista_factor_cobertura[4]
-        INCN_ERROR_MAX_PERMITIDO_100S = lista_error_permitido[4]
-        INCV_CONFORMIDAD_100S = lista_conformidad[4]
+            INCN_PROMEDIO_DATO_100R = lista_promedio[3]
+            INCN_INCERTIDUMBRE_EXPANDIDA_100R = lista_incertidumbre[3]
+            INCN_FACTOR_COBERTURA_100R = lista_factor_cobertura[3]
+            INCN_ERROR_MAX_PERMITIDO_100R = lista_error_permitido[3]
+            INCV_CONFORMIDAD_100R = lista_conformidad[3]
 
 
-        INCN_PROMEDIO_DATO_100T = lista_promedio[5]
-        INCN_INCERTIDUMBRE_EXPANDIDA_100T = lista_incertidumbre[5]
-        INCN_FACTOR_COBERTURA_100T = lista_factor_cobertura[5]
-        INCN_ERROR_MAX_PERMITIDO_100T = lista_error_permitido[5]
-        INCV_CONFORMIDAD_100T = lista_conformidad[5]
+            INCN_PROMEDIO_DATO_100S = lista_promedio[4]
+            INCN_INCERTIDUMBRE_EXPANDIDA_100S = lista_incertidumbre[4]
+            INCN_FACTOR_COBERTURA_100S = lista_factor_cobertura[4]
+            INCN_ERROR_MAX_PERMITIDO_100S = lista_error_permitido[4]
+            INCV_CONFORMIDAD_100S = lista_conformidad[4]
 
 
-        INCN_PROMEDIO_DATO_5I = lista_promedio[6]
-        INCN_INCERTIDUMBRE_EXPANDIDA_5I = lista_incertidumbre[6]
-        INCN_FACTOR_COBERTURA_5I = lista_factor_cobertura[6]
-        INCN_ERROR_MAX_PERMITIDO_5I = lista_error_permitido[6]
-        INCV_CONFORMIDAD_5I = lista_conformidad[6]
+            INCN_PROMEDIO_DATO_100T = lista_promedio[5]
+            INCN_INCERTIDUMBRE_EXPANDIDA_100T = lista_incertidumbre[5]
+            INCN_FACTOR_COBERTURA_100T = lista_factor_cobertura[5]
+            INCN_ERROR_MAX_PERMITIDO_100T = lista_error_permitido[5]
+            INCV_CONFORMIDAD_100T = lista_conformidad[5]
 
 
-        INCN_PROMEDIO_DATO_8C = lista_promedio[7]
-        INCN_INCERTIDUMBRE_EXPANDIDA_8C = lista_incertidumbre[7]
-        INCN_FACTOR_COBERTURA_8C = lista_factor_cobertura[7]
-        INCN_ERROR_MAX_PERMITIDO_8C = lista_error_permitido[7]
-        INCV_CONFORMIDAD_8C = lista_conformidad[7]
+            INCN_PROMEDIO_DATO_5I = lista_promedio[6]
+            INCN_INCERTIDUMBRE_EXPANDIDA_5I = lista_incertidumbre[6]
+            INCN_FACTOR_COBERTURA_5I = lista_factor_cobertura[6]
+            INCN_ERROR_MAX_PERMITIDO_5I = lista_error_permitido[6]
+            INCV_CONFORMIDAD_5I = lista_conformidad[6]
 
 
-        INCN_PROMEDIO_DATO_5C = lista_promedio[8]
-        INCN_INCERTIDUMBRE_EXPANDIDA_5C = lista_incertidumbre[8]
-        INCN_FACTOR_COBERTURA_5C = lista_factor_cobertura[8]
-        INCN_ERROR_MAX_PERMITIDO_5C = lista_error_permitido[8]
-        INCV_CONFORMIDAD_5C = lista_conformidad[8]
+            INCN_PROMEDIO_DATO_8C = lista_promedio[7]
+            INCN_INCERTIDUMBRE_EXPANDIDA_8C = lista_incertidumbre[7]
+            INCN_FACTOR_COBERTURA_8C = lista_factor_cobertura[7]
+            INCN_ERROR_MAX_PERMITIDO_8C = lista_error_permitido[7]
+            INCV_CONFORMIDAD_8C = lista_conformidad[7]
 
 
-        INCN_PROMEDIO_DATO_IMAX = lista_promedio[9]
-        INCN_INCERTIDUMBRE_EXPANDIDA_IMAX = lista_incertidumbre[9]
-        INCN_FACTOR_COBERTURA_IMAX = lista_factor_cobertura[9]
-        INCN_ERROR_MAX_PERMITIDO_IMAX = lista_error_permitido[9]
-        INCV_CONFORMIDAD_IMAX = lista_conformidad[9]
+            INCN_PROMEDIO_DATO_5C = lista_promedio[8]
+            INCN_INCERTIDUMBRE_EXPANDIDA_5C = lista_incertidumbre[8]
+            INCN_FACTOR_COBERTURA_5C = lista_factor_cobertura[8]
+            INCN_ERROR_MAX_PERMITIDO_5C = lista_error_permitido[8]
+            INCV_CONFORMIDAD_5C = lista_conformidad[8]
+
+
+            INCN_PROMEDIO_DATO_IMAX = lista_promedio[9]
+            INCN_INCERTIDUMBRE_EXPANDIDA_IMAX = lista_incertidumbre[9]
+            INCN_FACTOR_COBERTURA_IMAX = lista_factor_cobertura[9]
+            INCN_ERROR_MAX_PERMITIDO_IMAX = lista_error_permitido[9]
+            INCV_CONFORMIDAD_IMAX = lista_conformidad[9]
+
+        elif(CANT_PUNTO_CARGA == 7):
+            
+            INCN_PROMEDIO_DATO_IMIN = None
+            INCN_INCERTIDUMBRE_EXPANDIDA_IMIN = None
+            INCN_FACTOR_COBERTURA_IMIN = None
+            INCN_ERROR_MAX_PERMITIDO_IMIN = None
+            INCV_CONFORMIDAD_IMIN = None
+
+
+            INCN_PROMEDIO_DATO_5 = lista_promedio[0]
+            INCN_INCERTIDUMBRE_EXPANDIDA_5 = lista_incertidumbre[0]
+            INCN_FACTOR_COBERTURA_5 = lista_factor_cobertura[0]
+            INCN_ERROR_MAX_PERMITIDO_5 = lista_error_permitido[0]
+            INCV_CONFORMIDAD_5 = lista_conformidad[0]
+
+
+            INCN_PROMEDIO_DATO_100 = lista_promedio[1]
+            INCN_INCERTIDUMBRE_EXPANDIDA_100 = lista_incertidumbre[1]
+            INCN_FACTOR_COBERTURA_100 = lista_factor_cobertura[1]
+            INCN_ERROR_MAX_PERMITIDO_100 = lista_error_permitido[1]
+            INCV_CONFORMIDAD_100 = lista_conformidad[1]
+
+
+            INCN_PROMEDIO_DATO_100R = lista_promedio[2]
+            INCN_INCERTIDUMBRE_EXPANDIDA_100R = lista_incertidumbre[2]
+            INCN_FACTOR_COBERTURA_100R = lista_factor_cobertura[2]
+            INCN_ERROR_MAX_PERMITIDO_100R = lista_error_permitido[2]
+            INCV_CONFORMIDAD_100R = lista_conformidad[2]
+
+
+            INCN_PROMEDIO_DATO_100S = lista_promedio[3]
+            INCN_INCERTIDUMBRE_EXPANDIDA_100S = lista_incertidumbre[3]
+            INCN_FACTOR_COBERTURA_100S = lista_factor_cobertura[3]
+            INCN_ERROR_MAX_PERMITIDO_100S = lista_error_permitido[3]
+            INCV_CONFORMIDAD_100S = lista_conformidad[3]
+
+
+            INCN_PROMEDIO_DATO_100T = lista_promedio[4]
+            INCN_INCERTIDUMBRE_EXPANDIDA_100T = lista_incertidumbre[4]
+            INCN_FACTOR_COBERTURA_100T = lista_factor_cobertura[4]
+            INCN_ERROR_MAX_PERMITIDO_100T = lista_error_permitido[4]
+            INCV_CONFORMIDAD_100T = lista_conformidad[4]
+
+
+            INCN_PROMEDIO_DATO_5I = lista_promedio[5]
+            INCN_INCERTIDUMBRE_EXPANDIDA_5I = lista_incertidumbre[5]
+            INCN_FACTOR_COBERTURA_5I = lista_factor_cobertura[5]
+            INCN_ERROR_MAX_PERMITIDO_5I = lista_error_permitido[5]
+            INCV_CONFORMIDAD_5I = lista_conformidad[5]
+
+
+            INCN_PROMEDIO_DATO_8C = None
+            INCN_INCERTIDUMBRE_EXPANDIDA_8C = None
+            INCN_FACTOR_COBERTURA_8C = None
+            INCN_ERROR_MAX_PERMITIDO_8C =None
+            INCV_CONFORMIDAD_8C = None
+
+
+            INCN_PROMEDIO_DATO_5C = None
+            INCN_INCERTIDUMBRE_EXPANDIDA_5C = None
+            INCN_FACTOR_COBERTURA_5C = None
+            INCN_ERROR_MAX_PERMITIDO_5C = None
+            INCV_CONFORMIDAD_5C = None
+
+
+            INCN_PROMEDIO_DATO_IMAX = lista_promedio[6]
+            INCN_INCERTIDUMBRE_EXPANDIDA_IMAX = lista_incertidumbre[6]
+            INCN_FACTOR_COBERTURA_IMAX = lista_factor_cobertura[6]
+            INCN_ERROR_MAX_PERMITIDO_IMAX = lista_error_permitido[6]
+            INCV_CONFORMIDAD_IMAX = lista_conformidad[6]
+            
 
         NUMERO_SELLO_1 = n1
         NUMERO_SELLO_2 = n2
@@ -779,10 +859,12 @@ def main_certificado(DMEV_ID_TANDA,conn1,conn2):
         sheet['I48'] = D_TIPO_SELLO_RETIR_1
         sheet['L48'] = D_COLOR_SELLO_RETIR_1
         sheet['N48'] = ESTADO_SELLO_RETIR_1
+
         sheet['F50'] = NUMERO_SELLO_RETIR_2
         sheet['I50'] = D_TIPO_SELLO_RETIR_2
         sheet['L50'] = D_COLOR_SELLO_RETIR_2
         sheet['N50'] = ESTADO_SELLO_RETIR_2
+        
         sheet['F51'] = NUMERO_SELLO_RETIR_3
         sheet['I51'] = D_TIPO_SELLO_RETIR_3
         sheet['L51'] = D_COLOR_SELLO_RETIR_3
@@ -798,11 +880,12 @@ def main_certificado(DMEV_ID_TANDA,conn1,conn2):
 
         pythoncom.CoInitialize()
 
-        workbook.save(f'C:/Users/jcuellag/Documents/certificado_calibracion/certificados_excel/{fecha}_Certificado_{NUM_CERTIFICADO}.xlsx')
 
-        archivo_excel = (f'C:/Users/jcuellag/Documents/certificado_calibracion/certificados_excel/{fecha}_Certificado_{NUM_CERTIFICADO}.xlsx')
+        workbook.save(f'C:/Users/jcuellag/Documents/practica_flask/api_flask/src/certificados_calibracion/certificados_excel/{fecha}_Certificado_{NUM_CERTIFICADO}.xlsx')
 
-        archivo_pdf = (f'C:/Users/jcuellag/Documents/certificado_calibracion/certificados_pdf/{fecha}_Certificado_{NUM_CERTIFICADO}.pdf')
+        archivo_excel = (f'C:/Users/jcuellag/Documents/practica_flask/api_flask/src/certificados_calibracion/certificados_excel/{fecha}_Certificado_{NUM_CERTIFICADO}.xlsx')
+
+        archivo_pdf = (f'C:/Users/jcuellag/Documents/practica_Flask/api_flask/src/certificados_calibracion/certificados_pdf/{fecha}_Certificado_{NUM_CERTIFICADO}.pdf')
 
         excel = cpdf.Dispatch("Excel.Application")
         excel.Visible = False
