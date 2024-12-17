@@ -1,4 +1,4 @@
-from flask import Blueprint,request,jsonify
+from flask import Blueprint,request,jsonify, send_file
 from utils.db import db
 from datetime import datetime
 from models.sesion import SEF_TSESSION
@@ -8,6 +8,8 @@ from models.opciones_norma import SEF_TOPCIONES_NORMA
 from modulos.incertidumbre import exacitud as cex
 from datetime import datetime
 from modulos.GEN_CERTIF import generar_cert as gc
+from modulos.autorizar_certificado import aprobacion_certificado as check
+import os
 
 
 datos = Blueprint("datos",__name__)
@@ -19,7 +21,7 @@ def index():
 
 
 
-@datos.route('/normas/insertarDatosJson',methods=['POST'])
+@datos.route('/certificados/insertarDatosJson',methods=['POST'])
 def insertar_datos():
 
     #Inserción en SEF_TSESSION
@@ -268,15 +270,70 @@ def insertar_datos():
     conn1 = db.get_engine(bind='db1')
     conn2 = db.get_engine(bind='db2')
     
-    gc.main_certificado(tanda,conn1,conn2)
+    list_certificados = gc.main_certificado(tanda,conn1,conn2)
 
 
-    return jsonify({"message": f"Tanda {tanda} Procesada"})
+    return jsonify({"message": f"Tanda {tanda} Procesada",
+                    "list_certificados": list_certificados}),200
 
 
 
 
 
+@datos.route('/certificados/firma_certificado',methods=['PUT'])
+def update_norma():
+
+
+
+    SESN_ID_TANDA=request.json['id_tanda']
+    list_CCN_NUM_CERTIFICADO=request.json['list_certificados']
+
+    conn1 = db.get_engine(bind='db1')
+
+
+    data = check.main(SESN_ID_TANDA,list_CCN_NUM_CERTIFICADO,conn1)
+
+
+
+    return jsonify({"message": data[1],
+                    "list_certificados":data[0]}),200
+
+
+@datos.route('/certificados/verPDF', methods=['POST'])
+def verPDF():
+    
+
+    id_certi = request.json.get('id_certi')
+    fecha_certi = request.json.get('fecha_certi')
+
+
+    directorio_base = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "certificados_calibracion", "certificados_pdf"))
+
+    rutaPDF = os.path.join(directorio_base, f"{fecha_certi}_Certificado_{id_certi}.pdf")
+
+    
+
+    return send_file(rutaPDF, mimetype='application/pdf')
+
+    
+    
+
+
+
+@datos.route('/certificados/verExcel', methods=['POST'])
+def verExcel():
+
+    id_certi = request.json.get('id_certi')
+    fecha_certi = request.json.get('fecha_certi')
+
+    directorio_base = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "certificados_calibracion", "certificados_excel"))
+
+    rutaExcel = os.path.join(directorio_base, f"{fecha_certi}_Certificado_{id_certi}.xlsx")
+
+
+    
+    return send_file(rutaExcel, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    
 
 
 

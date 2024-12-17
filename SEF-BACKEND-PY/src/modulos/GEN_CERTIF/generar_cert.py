@@ -5,10 +5,14 @@ from datetime import datetime
 from utils.db import db
 from sqlalchemy import text
 import pythoncom
+import os
+
+base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__),'../../..'))
 
 
 def main_certificado(DMEV_ID_TANDA,conn1,conn2):
 
+    list_certificados = []
 
     id_tanda = DMEV_ID_TANDA
 
@@ -210,8 +214,8 @@ def main_certificado(DMEV_ID_TANDA,conn1,conn2):
             fecha_hora_actual = datetime.now()
             fecha = fecha_hora_actual.date()
             hora = fecha_hora_actual.time()
-            sql_insert = text(f'''INSERT INTO SEF_TCERTIFICADOS_CALIBRACION(DMEV_ID_TANDA, EQUN_ID_EPM, DMEV_ID_SERIAL, CCD_FECHA_EMISION,CCD_EST_APROBACION)
-                                    VALUES ({id_tanda}, {ID_EPM}, {id_serial}, TO_DATE('{fecha}','YYYY-MM-DD'),'NO')''')
+            sql_insert = text(f'''INSERT INTO SEF_TCERTIFICADOS_CALIBRACION(DMEV_ID_TANDA, EQUN_ID_EPM, DMEV_ID_SERIAL, CCD_FECHA_EMISION,CCN_EST_APROBACION)
+                                    VALUES ({id_tanda}, {ID_EPM}, {id_serial}, TO_DATE('{fecha}','YYYY-MM-DD'),0)''')
 
 
             connection_sef.execute(sql_insert)
@@ -881,28 +885,44 @@ def main_certificado(DMEV_ID_TANDA,conn1,conn2):
         pythoncom.CoInitialize()
 
 
-        workbook.save(f'C:/Users/jcuellag/Documents/practica_flask/api_flask/src/certificados_calibracion/certificados_excel/{fecha}_Certificado_{NUM_CERTIFICADO}.xlsx')
+        # workbook.save(f'C:/Users/jcuellag/Documents/practica_flask/api_flask/src/certificados_calibracion/certificados_excel/{fecha}_Certificado_{NUM_CERTIFICADO}.xlsx')
 
-        archivo_excel = (f'C:/Users/jcuellag/Documents/practica_flask/api_flask/src/certificados_calibracion/certificados_excel/{fecha}_Certificado_{NUM_CERTIFICADO}.xlsx')
+        # archivo_excel = (f'C:/Users/jcuellag/Documents/practica_flask/api_flask/src/certificados_calibracion/certificados_excel/{fecha}_Certificado_{NUM_CERTIFICADO}.xlsx')
 
-        archivo_pdf = (f'C:/Users/jcuellag/Documents/practica_Flask/api_flask/src/certificados_calibracion/certificados_pdf/{fecha}_Certificado_{NUM_CERTIFICADO}.pdf')
+        # archivo_pdf = (f'C:/Users/jcuellag/Documents/practica_Flask/api_flask/src/certificados_calibracion/certificados_pdf/{fecha}_Certificado_{NUM_CERTIFICADO}.pdf')
+
+
+        ruta_excel = os.path.join(base_dir,'src','certificados_calibracion','certificados_excel',f'{fecha}_certificado_{NUM_CERTIFICADO}.xlsx')
+
+        ruta_pdf = os.path.join(base_dir,'src','certificados_calibracion','certificados_pdf',f'{fecha}_certificado_{NUM_CERTIFICADO}.pdf')
+
+        os.makedirs(os.path.dirname(ruta_excel),exist_ok=True)
+        os.makedirs(os.path.dirname(ruta_pdf),exist_ok=True)
+
+        workbook.save(ruta_excel)
 
         excel = cpdf.Dispatch("Excel.Application")
         excel.Visible = False
 
-        libro = excel.Workbooks.Open(archivo_excel)
+        libro = excel.Workbooks.Open(ruta_excel)
 
-        libro.ExportAsFixedFormat(0, archivo_pdf)
+        libro.ExportAsFixedFormat(0, ruta_pdf)
 
 
         libro.Close()
         excel.Quit()
 
+        del libro
+        del excel
+
+
+        archivo_excel = ruta_excel
+        archivo_pdf = ruta_pdf
+
 
         pythoncom.CoUninitialize()
 
-        # cursor.close()
-        # cf.connection.close()
+        list_certificados.append(NUM_CERTIFICADO)
         
         id_serial = id_serial - f
         
@@ -910,6 +930,8 @@ def main_certificado(DMEV_ID_TANDA,conn1,conn2):
         j+=1
 
         f+=1
+
+    return list_certificados
 
 
 
