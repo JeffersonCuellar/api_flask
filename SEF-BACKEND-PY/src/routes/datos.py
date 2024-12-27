@@ -280,18 +280,23 @@ def insertar_datos():
 
 
 
-@datos.route('/certificados/firma_certificado',methods=['PUT'])
+@datos.route('/certificados/firma_certificado/',methods=['PUT'])
 def update_norma():
+
+
 
 
 
     SESN_ID_TANDA=request.json['id_tanda']
     list_CCN_NUM_CERTIFICADO=request.json['list_certificados']
+    documento = request.json['documento']
 
+    URL_NODE = f'https://cens-wdl04:8011/api/seg/getFirma/{documento}'
+    
     conn1 = db.get_engine(bind='db1')
 
 
-    data = check.main(SESN_ID_TANDA,list_CCN_NUM_CERTIFICADO,conn1)
+    data = check.main(SESN_ID_TANDA,list_CCN_NUM_CERTIFICADO,conn1,URL_NODE)
 
 
 
@@ -334,7 +339,6 @@ def verExcel():
     
     return send_file(rutaExcel, mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     
-
 
 
 

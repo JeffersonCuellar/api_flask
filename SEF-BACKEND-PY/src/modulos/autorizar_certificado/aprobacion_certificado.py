@@ -5,11 +5,14 @@ import win32com.client as cpdf
 from sqlalchemy import text
 import pythoncom
 import os
+import requests
+from io import BytesIO
+
 
 
 base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..'))
 
-def main(id_tanda, list_certificados, conn1):
+def main(id_tanda, list_certificados, conn1,URL_NODE):
     
     
     aprobado = ''
@@ -26,8 +29,9 @@ def main(id_tanda, list_certificados, conn1):
             pythoncom.CoInitialize()
             
             query = (text(f'''SELECT DISTINCT cc.ccd_fecha_emision, cc.ccn_est_aprobacion
-                            FROM SEF_TDATOS_MEDIDORES dt, SEF_TCERTIFICADOS_CALIBRACION cc
-                            WHERE dt.dmev_id_tanda = :id_tanda AND cc.ccn_num_certificado = :list_certificados'''))
+                                FROM SEF_TDATOS_MEDIDORES dt
+                                INNER JOIN SEF_TCERTIFICADOS_CALIBRACION cc
+                                ON dt.dmev_id_tanda = :id_tanda AND cc.ccn_num_certificado = :list_certificados'''))
 
             obj_fecha, est_certificado = connection_sef.execute(query, {'id_tanda': id_tanda, 'list_certificados': list_certificados[i]}).fetchone()
             fecha = obj_fecha.strftime("%Y-%m-%d")
@@ -37,18 +41,23 @@ def main(id_tanda, list_certificados, conn1):
             data_certificados.append(data_cert)
 
             if est_certificado == 0:
-                
+                    
+                    #obtenemos imagen
+                    response = requests.get(URL_NODE,verify=False)
+                    image_data = BytesIO(response.content)
+
+                    
                     excel_file = os.path.join(base_dir, 'src', 'certificados_calibracion', 'certificados_excel', f'{fecha}_certificado_{list_certificados[i]}.xlsx')
 
                     workbook = openpyxl.load_workbook(excel_file)
                     sheet = workbook.active
 
                     # Insertamos firma
-                    img_path = os.path.join(base_dir,'src','images','firma.png')
-                    firma = Image(img_path)
+                    # img_path = os.path.join(base_dir,'src','images','firma.png')
+                    firma = Image(image_data)
 
                     firma.width = 150  
-                    firma.height = 50
+                    firma.height = 40
 
                     sheet.add_image(firma, 'T54')  
 

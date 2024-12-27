@@ -1,6 +1,8 @@
 import openpyxl
 from openpyxl.drawing.image import Image
+from openpyxl.styles import Font
 import win32com.client as cpdf
+from decimal import Decimal
 from datetime import datetime
 from utils.db import db
 from sqlalchemy import text
@@ -145,6 +147,10 @@ def main_certificado(DMEV_ID_TANDA,conn1,conn2):
 
             ERROR_DOSIF, INCERT_DOSIF, EVAL_CONFORM   = data_calculos.fetchall()[0]
 
+            format_incert_dosif = format_cifras_significativas(INCERT_DOSIF,2) if INCERT_DOSIF is not None else INCERT_DOSIF
+            cant_decimales = contar_decimales(format_incert_dosif)
+            format_error_dosif = f'{ERROR_DOSIF:.{cant_decimales}f}' if ERROR_DOSIF is not None else ERROR_DOSIF
+
             # Datos Mediciones dosificacion y ensayos
 
             data_mediciones = connection_sef.execute(text(f'''SELECT MEDV_VACIO, MEDV_ARRANQUE, MEDN_LECTURA_INICIAL_UNO, MEDN_LECTURA_FINAL_UNO, MEDN_ENERGIA_APLICADA_UNO, MEDN_LECTURA_INICIAL_DOS, MEDN_LECTURA_FINAL_DOS, MEDN_ENERGIA_APLICADA_DOS, MEDN_LECTURA_INICIAL_TRES, MEDN_LECTURA_FINAL_TRES, MEDN_ENERGIA_APLICADA_TRES
@@ -180,9 +186,15 @@ def main_certificado(DMEV_ID_TANDA,conn1,conn2):
 
                 PROMEDIO_DATO, INCERTIDUMBRE_EXPANDIDA, FACTOR_COBERTURA, ERROR_MAX_PERMITIDO, CONFORMIDAD = data.fetchall()[0]
 
-                lista_promedio.append(PROMEDIO_DATO)
-                lista_incertidumbre.append(INCERTIDUMBRE_EXPANDIDA)
-                lista_factor_cobertura.append(FACTOR_COBERTURA)
+                format_factor_cobert = f'{FACTOR_COBERTURA:.2f}' if FACTOR_COBERTURA is not None else FACTOR_COBERTURA
+                incertidumbre_format = format_cifras_significativas(INCERTIDUMBRE_EXPANDIDA,2) if INCERTIDUMBRE_EXPANDIDA is not None else INCERTIDUMBRE_EXPANDIDA
+                cant_decimales = contar_decimales(incertidumbre_format)
+                error_medio_format = f'{PROMEDIO_DATO:.{cant_decimales}f}' if PROMEDIO_DATO is not None else PROMEDIO_DATO
+                
+                
+                lista_promedio.append(error_medio_format)
+                lista_incertidumbre.append(incertidumbre_format)
+                lista_factor_cobertura.append(format_factor_cobert)
                 lista_error_permitido.append(ERROR_MAX_PERMITIDO)
                 lista_conformidad.append(CONFORMIDAD)  
 
@@ -388,33 +400,34 @@ def main_certificado(DMEV_ID_TANDA,conn1,conn2):
             # Consulta de datos de usuario y medidor
 
             data_usuario= connection_sac.execute(text(f'''SELECT C.CLIENTE_ID,
-                                        C.NOMBRE,
-                                        C.DIRECCION,
-                                        M.NUMERO_MEDIDOR,
-                                        M.FRECUENCIA_NOMINAL,
-                                        M.TENSION_NOMINAL,
-                                        M.CONSTANTE,
-                                        M.UNIDAD_CONSTANTE,
-                                        (SELECT MU.DESCRIPCION FROM MULTITABLA MU WHERE MU.TABLA='MED_CONSTANTE' AND MU.CODIGO_NUM=M.UNIDAD_CONSTANTE)AS D_UNIDAD_CONSTANTE,
-                                        M.SENTIDO_MEDICION,
-                                        (SELECT MU.DESCRIPCION FROM MULTITABLA MU WHERE MU.TABLA='MED_SENTIDO' AND MU.CODIGO_NUM=M.SENTIDO_MEDICION)AS D_SENTIDO_MEDICION,
-                                        M.TIPO_REGISTRADOR,
-                                        (SELECT MU.DESCRIPCION FROM MULTITABLA MU WHERE MU.TABLA='MED_REGISTRADOR' AND MU.CODIGO_NUM=M.TIPO_REGISTRADOR)AS D_TIPO_REGISTRADOR,
-                                        M.ENTEROS,
-                                        M.DECIMALES,
-                                        M.NRO_FASES,
-                                        M.NRO_HILOS,
-                                        M.COMPONENTES,
-                                        (SELECT MU.DESCRIPCION FROM MULTITABLA MU WHERE MU.TABLA='MED_COMPONENTES' AND MU.CODIGO_NUM=M.COMPONENTES)AS D_COMPONENTES,
-                                        M.FABRICANTE,
-                                        (SELECT MU.DESCRIPCION FROM MULTITABLA MU WHERE MU.TABLA='ELE_FABRICANTES' AND MU.CODIGO_NUM=M.FABRICANTE)AS D_FABRICANTE,
-                                        M.MODELO,
-                                        (SELECT MU.DESCRIPCION FROM MULTITABLA MU WHERE MU.TABLA='MED_MODELO' AND MU.CODIGO_NUM=M.MODELO)AS D_MODELO,
-                                        (SELECT TO_CHAR(TO_DATE(MAX (MA.FECHA_ACCION),'J'), 'dd/mm/yyyy')AS FECHA_ACCION FROM SAC.MED_ACCIONES MA WHERE MA.CLIENTE_ID=M.CLIENTE_ID AND MA.MEDIDOR_ID=M.MEDIDOR_ID AND ACCION_MEDIDOR='E')AS FECHA_ACCION,
-                                        (SELECT MU.DESCRIPCION from  SAC.MED_ACCIONES M, MULTITABLA MU   where M.medidor_id=885689    and M.accion_medidor='D'    AND MU.TABLA='OFICINAS'    AND M.oficina=MU.codigo_car and M.FECHA_ACCION = (SELECT MAX (MA.FECHA_ACCION) FROM SAC.MED_ACCIONES MA WHERE MA.CLIENTE_ID=C.CLIENTE_ID AND MA.MEDIDOR_ID=M.MEDIDOR_ID AND ACCION_MEDIDOR='D'))AS OFICINA
-                                        FROM SAC.CLIENTES C,SAC.MEDIDORES M
-                                        WHERE C.CLIENTE_ID=M.CLIENTE_ID
-                                        AND M.NUMERO_MEDIDOR='{SERIAL}' '''))
+                            C.NOMBRE,
+                            C.DIRECCION,
+                            M.NUMERO_MEDIDOR,
+                            M.FRECUENCIA_NOMINAL,
+                            M.TENSION_NOMINAL,
+                            M.CONSTANTE,
+                            M.UNIDAD_CONSTANTE,
+                            (SELECT MU.DESCRIPCION FROM MULTITABLA MU WHERE MU.TABLA='MED_CONSTANTE' AND MU.CODIGO_NUM=M.UNIDAD_CONSTANTE)AS D_UNIDAD_CONSTANTE,
+                            M.SENTIDO_MEDICION,
+                            (SELECT MU.DESCRIPCION FROM MULTITABLA MU WHERE MU.TABLA='MED_SENTIDO' AND MU.CODIGO_NUM=M.SENTIDO_MEDICION)AS D_SENTIDO_MEDICION,
+                            M.TIPO_REGISTRADOR,
+                            (SELECT MU.DESCRIPCION FROM MULTITABLA MU WHERE MU.TABLA='MED_REGISTRADOR' AND MU.CODIGO_NUM=M.TIPO_REGISTRADOR)AS D_TIPO_REGISTRADOR,
+                            M.ENTEROS,
+                            M.DECIMALES,
+                            M.NRO_FASES,
+                            M.NRO_HILOS,
+                            M.COMPONENTES,
+                            (SELECT MU.DESCRIPCION FROM MULTITABLA MU WHERE MU.TABLA='MED_COMPONENTES' AND MU.CODIGO_NUM=M.COMPONENTES)AS D_COMPONENTES,
+                            M.FABRICANTE,
+                            (SELECT MU.DESCRIPCION FROM MULTITABLA MU WHERE MU.TABLA='ELE_FABRICANTES' AND MU.CODIGO_NUM=M.FABRICANTE)AS D_FABRICANTE,
+                            M.MODELO,
+                            (SELECT MU.DESCRIPCION FROM MULTITABLA MU WHERE MU.TABLA='MED_MODELO' AND MU.CODIGO_NUM=M.MODELO)AS D_MODELO,
+                            (SELECT TO_CHAR(TO_DATE(MAX (MA.FECHA_ACCION),'J'), 'dd/mm/yyyy')AS FECHA_ACCION FROM SAC.MED_ACCIONES MA WHERE MA.CLIENTE_ID=M.CLIENTE_ID AND MA.MEDIDOR_ID=M.MEDIDOR_ID AND ACCION_MEDIDOR='E')AS FECHA_ACCION
+                            ,(select MU.DESCRIPCION from  SAC.MED_ACCIONES ME, MULTITABLA MU where ME.medidor_id=M.MEDIDOR_ID and ME.accion_medidor='D'
+                                AND MU.TABLA='OFICINAS' AND ME.oficina=MU.codigo_car and ME.FECHA_ACCION = (SELECT MAX (MA.FECHA_ACCION) FROM SAC.MED_ACCIONES MA WHERE MA.CLIENTE_ID=C.CLIENTE_ID AND MA.MEDIDOR_ID=M.MEDIDOR_ID AND ACCION_MEDIDOR='D'))AS OFICINA
+                            FROM SAC.CLIENTES C,SAC.MEDIDORES M
+                            WHERE C.CLIENTE_ID=M.CLIENTE_ID
+                            AND M.NUMERO_MEDIDOR='{SERIAL}' '''))
                     
             CLIENTE_ID, NOMBRE_CLIENTE, DIRECCION, NUMERO_MEDIDOR, FRECUENCIA_NOMINAL, TENSION_NOMINAL, CONSTANTE, UNIDAD_CONSTANTE, D_UNIDAD_CONSTANTE, SENTIDO_MEDICION, D_SENTIDO_MEDICION, TIPO_REGISTRADOR, D_TIPO_REGISTRADOR, REGISTRO_ENTEROS, REGISTRO_DECIMALES, NUMERO_FASES, NUMERO_HILOS, COMPONENTES, D_COMPONENTES, FABRICANTE, D_FABRICANTE, MODELO, D_MODELO, FECHA_RECEPCION, OFICINA   = data_usuario.fetchall()[0]
 
@@ -492,13 +505,13 @@ def main_certificado(DMEV_ID_TANDA,conn1,conn2):
         HUMEDAD = 'N.A'
         SESV_TIPO_DE_ENERGIA = TIPO_DE_ENERGIA
         FLUJO_ENERGIA = FLUJO_ENERGIA
-        TENSION_PRUEBA = TENSION_PRUEBA
+        TENSION_PRUEBA = tension_cant_fases(TENSION_PRUEBA,CANT_FASES)
         CORRIENTE_PRUEBA_NOM = CORRIENTE_PRUEBA_NOM
         ARRANQUE = ARRANQUE
         VACIO = VACIO
         RESDV_EVAL_CONFORM = EVAL_CONFORM
-        RESDN_ERROR_DOSIF = ERROR_DOSIF
-        RESDN_INCERT_DOSIF = INCERT_DOSIF
+        RESDN_ERROR_DOSIF = format_error_dosif
+        RESDN_INCERT_DOSIF = format_incert_dosif
         CALDN_LECTURA_INICIAL_UNO = LECTURA_INICIAL_UNO
         CALDN_LECTURA_FINAL_UNO = LECTURA_FINAL_UNO
         CALDN_ENERGIA_APLICADA_UNO = ENERGIA_APLICADA_UNO
@@ -715,7 +728,7 @@ def main_certificado(DMEV_ID_TANDA,conn1,conn2):
         SESV_CALIBRADOR = CALIBRADOR
 
 
-        sheet['Q3'] = NUM_CERTIFICADO
+        sheet['O3'] = NUM_CERTIFICADO
         sheet['F4'] = CLIENTE
         sheet['F5'] = DIRECCION
         sheet['AG4'] = ID_TANDA
@@ -750,8 +763,8 @@ def main_certificado(DMEV_ID_TANDA,conn1,conn2):
         sheet['A18'] = TRAZABILIDAD
         sheet['A15'] = METODOS_ENSAYOS
         sheet['A21'] = INCERTIDUMBRE_MEDICION
-        sheet['F24'] = TEMPERATURA
-        sheet['N24'] = HUMEDAD
+        sheet['E24'] = TEMPERATURA
+        #sheet['N24'] = HUMEDAD
 
         sheet['K27'] = SESV_TIPO_DE_ENERGIA
         sheet['N27'] = FLUJO_ENERGIA
@@ -877,20 +890,15 @@ def main_certificado(DMEV_ID_TANDA,conn1,conn2):
 
         sheet['A56'] = DESCARGO_RESPONSABILIDADES
 
-        sheet['F65'] = SESV_CALIBRADOR
+        sheet['F66'] = SESV_CALIBRADOR
 
 
         sheet.add_image(img, 'B2')
 
+        sheet['Q1'].font = Font(bold=True,size=8.5)
+
+
         pythoncom.CoInitialize()
-
-
-        # workbook.save(f'C:/Users/jcuellag/Documents/practica_flask/api_flask/src/certificados_calibracion/certificados_excel/{fecha}_Certificado_{NUM_CERTIFICADO}.xlsx')
-
-        # archivo_excel = (f'C:/Users/jcuellag/Documents/practica_flask/api_flask/src/certificados_calibracion/certificados_excel/{fecha}_Certificado_{NUM_CERTIFICADO}.xlsx')
-
-        # archivo_pdf = (f'C:/Users/jcuellag/Documents/practica_Flask/api_flask/src/certificados_calibracion/certificados_pdf/{fecha}_Certificado_{NUM_CERTIFICADO}.pdf')
-
 
         ruta_excel = os.path.join(base_dir,'src','certificados_calibracion','certificados_excel',f'{fecha}_certificado_{NUM_CERTIFICADO}.xlsx')
 
@@ -932,6 +940,37 @@ def main_certificado(DMEV_ID_TANDA,conn1,conn2):
         f+=1
 
     return list_certificados
+
+
+#Manejo de cifras significativas
+def format_cifras_significativas(num,cant_cifras):
+    return f'{Decimal(num):.{cant_cifras}g}'
+
+def contar_decimales(numero):
+    numero_str = str(numero)
+
+    if '.' in numero_str:
+        decimales = len(numero_str.split('.')[1])
+
+    else:
+        decimales = 0
+
+    return decimales
+
+
+#Tension de prueba con cant de fases
+def tension_cant_fases(tension_prueba, cant_fases):
+    if cant_fases == '1F':
+        tension_prueba = str(tension_prueba)
+    elif cant_fases == '2F':
+        tension_prueba = f'2X{tension_prueba}/208'
+    elif cant_fases == '3F':
+        tension_prueba = f'3X{tension_prueba}/208'
+    else:
+        tension_prueba = ''
+
+    return tension_prueba 
+
 
 
 

@@ -82,7 +82,7 @@ def main(tanda):
             #El id_serial será incremental de acuerdo al numero de medidores por tanda
 
             
-            CLASE,VALOR_MEDIO_MIN,DESVIACION_ESTANDAR_MIN,VALOR_MEDIO_5,DESVIACION_ESTANDAR_5,VALOR_MEDIO_100_RST,DESVIACION_ESTANDAR_100_RST,VALOR_MEDIO_1OO_R,DESVIACION_ESTANDAR_100_R,VALOR_MEDIO_100_S,DESVIACION_ESTANDAR_100_S,VALOR_MEDIO_100_T,DESVIACION_ESTANDAR_100_T,VALOR_MEDIO_05I,DESVIACION_ESTANDAR_05I,VALOR_MEDIO_08C,DESVIACION_ESTANDAR_08C,VALOR_MEDIO_O5C,DESVIACION_ESTANDAR_05C,VALOR_MEDIO_MAX,DESVIACION_ESTANDAR_MAX = data_medicion.fetchall()[0] #TRAER TODAS LAS DESVIACIONES
+            CLASE,VALOR_MEDIO_MIN,DESVIACION_ESTANDAR_MIN,VALOR_MEDIO_5,DESVIACION_ESTANDAR_5,VALOR_MEDIO_100_RST,DESVIACION_ESTANDAR_100_RST,VALOR_MEDIO_1OO_R,DESVIACION_ESTANDAR_100_R,VALOR_MEDIO_100_S,DESVIACION_ESTANDAR_100_S,VALOR_MEDIO_100_T,DESVIACION_ESTANDAR_100_T,VALOR_MEDIO_05I,DESVIACION_ESTANDAR_05I,VALOR_MEDIO_08C,DESVIACION_ESTANDAR_08C,VALOR_MEDIO_05C,DESVIACION_ESTANDAR_05C,VALOR_MEDIO_MAX,DESVIACION_ESTANDAR_MAX = data_medicion.fetchall()[0] #TRAER TODAS LAS DESVIACIONES
             
             CLASE_VALOR = CLASE.replace('.','')
 
@@ -95,6 +95,7 @@ def main(tanda):
             i=1 
             while(i <= puntos_carga ):
 
+                print(f'punto de carga: {i}')
                 if(puntos_carga == 10):
 
                     match(i):
@@ -123,7 +124,7 @@ def main(tanda):
                             VALOR_MEDIO = VALOR_MEDIO_08C
                             DESVIACION_ESTANDAR = DESVIACION_ESTANDAR_08C
                         case 9:
-                            VALOR_MEDIO = VALOR_MEDIO_O5C
+                            VALOR_MEDIO = VALOR_MEDIO_05C
                             DESVIACION_ESTANDAR = DESVIACION_ESTANDAR_05C
                         case 10:
                             VALOR_MEDIO = VALOR_MEDIO_MAX
@@ -175,10 +176,21 @@ def main(tanda):
                     
                 incertidumbre_c = calcular_Uc(incertidumbre_a,incertidumbre_B)
 
-                valorEfectivo = calcular_Vef(incertidumbre_a,incertidumbre_c)
+
+                valorEfectivo = calcular_Vef(incertidumbre_a,incertidumbre_c,incertidumbre_B)
+
 
                 factorCobertura = calcular_K(valorEfectivo)
 
+                print(f'VALOR_MEDIO: {VALOR_MEDIO}')
+                print(f'DESVIACION_ESTANDAR: {DESVIACION_ESTANDAR}')
+                print(f'incertidumbre_a: {incertidumbre_a}')
+                print(f'incertidumbre_B: {incertidumbre_B}')
+                print(f'incertidumbre_c: {incertidumbre_c}')
+                print(f'valorEfectivo: {valorEfectivo}')
+                print(f'factorCobertura : {factorCobertura}')
+
+                print('fin de punto de carga------>')
                 error_porcentual = calcular_limite_ep(CLASE_VALOR,id_norma,i)
 
                 incertidumbre_exp = calcular_incertidumbre_Exp(incertidumbre_c,factorCobertura)
@@ -261,7 +273,7 @@ def calcular_Ua(desv_est):
     if (desv_est is not None):
         desviacion_est = float(desv_est)
         raiz = math.sqrt(3)
-        resultado = round(desviacion_est/raiz,3)
+        resultado = desviacion_est/raiz
     else:
         resultado = None
     
@@ -275,7 +287,7 @@ def calcular_Uc(Ua,Ub):
 
     if (Ua is not None):
         Ub = float(Ub)
-        resultado = round(math.sqrt(Ua**2 + Ub**2), 3)
+        resultado = math.sqrt(Ua**2 + Ub**2)
     else:
         resultado = None
     
@@ -283,14 +295,20 @@ def calcular_Uc(Ua,Ub):
 
 
 # Vef: El valor efectivo es suministrado pr la formula t-student:
-def calcular_Vef(Ua, Uc):
 
+
+def calcular_Vef(Ua, Uc, Ub):
+    print(f'Ua: {type(Ua)}')
+    print(f'Ub: {type(Ub)}')
+    print(f'Uc: {type(Uc)}')
     try:
-        Uc = float(Uc)
-        resultado = round(math.floor((Uc**4 / Ua**4) * 10**3) / 10**3,3)
+        Ub = float(Ub)
+        resultado = (Uc**4) / ((Ua**4 / 2) + (Ub**4 / 200))
     except Exception as e:
         resultado = 999999
-    return round(resultado,3)
+    return resultado
+
+
 
 
 # k: constante suminstrada por la formula t-student:(factor de cobertura)
@@ -313,7 +331,7 @@ def calcular_incertidumbre_Exp(u_c,k):
 
     if(k is not None and u_c is not None):
 
-        resultado = round(u_c*k,6)
+        resultado = u_c*k
     else:
         resultado = None
 
